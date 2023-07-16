@@ -1,0 +1,215 @@
+local csgo_weapons = require("gamesense/csgo_weapons") or error("Failed to load csgo_weapons")
+local images = require("gamesense/images") or error("Failed to load images | https://gamesense.pub/forums/viewtopic.php?id=22917")
+
+local weapons = {["pistols"]={weapons={"weapon_hkp2000","weapon_glock","weapon_cz75a","weapon_deagle","nil"}},
+["main"]={weapons={"weapon_ak47","weapon_aug","weapon_famas","weapon_galilar","weapon_m4a1","weapon_sg556","weapon_awp","weapon_g3sg1","weapon_scar20","weapon_ssg08","nil"}},
+["utilities"]={weapons={ "weapon_hegrenade","weapon_smokegrenade","weapon_molotov","weapon_incgrenade","weapon_taser","item_assaultsuit","item_kevlar","nil"}}}
+
+local buy_weapons = {["weapon_deagle"]="deagle",["weapon_ak47"]="ak47",["weapon_hkp2000"]="hkp200",["weapon_glock"]="glock",["weapon_awp"]="awp",["weapon_scar20"]="scar20",["weapon_g3sg1"]="g3sg1",["weapon_ssg08"]="ssg08",
+["weapon_aug"]="aug",["weapon_famas"]="famas",["weapon_cz75a"]="fn57",["weapon_hegrenade"]="hegrenade",["weapon_smokegrenade"]="smokegrenade",["weapon_molotov"]="molotov",["weapon_incgrenade"]="incgrenade",["weapon_m4a1"]="m4a1",
+["weapon_sg556"]="sg556",["weapon_galilar"]="galilar",["weapon_taser"]="taser",["item_assaultsuit"]="vesthelm",["item_kevlar"]="vest"}
+
+local tab,container = "LUA","B"
+
+local main_combo = ui.new_combobox(tab, container, "MAIN", {"nil","weapon_ak47","weapon_aug","weapon_famas","weapon_galilar","weapon_m4a1","weapon_sg556","weapon_awp","weapon_g3sg1","weapon_scar20","weapon_ssg08"})
+local pistol_combo = ui.new_combobox(tab, container, "PISTOLS COMBO", {"nil","weapon_hkp2000","weapon_glock","weapon_cz75a","weapon_deagle"})
+local utilities_combo = ui.new_multiselect(tab, container, "UTILITIES", {"weapon_hegrenade","weapon_smokegrenade","weapon_molotov","weapon_incgrenade","weapon_taser","item_assaultsuit","item_kevlar"})
+
+local function table_contains(tbl, val)
+    for i=1,#tbl do
+        if tbl[i] == val then
+            return true
+        end
+    end
+    return false
+end
+
+
+local function intersect(x, y, w, h)
+    local cx, cy = ui.mouse_position()
+    return cx >= x and cx <= x + w and cy >= y and cy <= y + h
+end
+
+local utilities = {}
+
+local selected_weapon = "pistols"
+local hovered = false
+
+local rectangle_outline = function(x,y,w,h,r,g,b,a)
+
+    -- left vertical
+    renderer.rectangle(x,y,1,h,r,g,b,a) 
+    -- right vertical
+    renderer.rectangle(x+w,y,1,h,r,g,b,a) 
+    -- bottom horizontal
+    renderer.rectangle(x,y+h,w+1,1,r,g,b,a) 
+    -- top horizontal
+    renderer.rectangle(x,y,w+1,1,r,g,b,a) 
+
+end
+
+local main_paint = function()
+
+    if not ui.is_menu_open() then 
+        return 
+    end
+
+    local w,h = client.screen_size()
+    rectangle_outline(w/2+80,h/2-10,280,30,255,255,255,255)
+    renderer.blur(w/2+80,h/2-10,280,30,1,0.5)
+    
+   
+
+
+    local size = 0 
+    hovered = false
+    local menu_size = selected_weapon == "main" and 66*#weapons[selected_weapon].weapons-1 or 280
+    renderer.rectangle(w/2 + 80, h/2 + 21, menu_size, 180, 24, 24, 24, 255)
+    rectangle_outline(w/2 + 80, h/2 + 20, menu_size,180,255,255,255,255)
+    for k,v in pairs(weapons) do 
+
+        size = size + 100
+
+        local color_text = {255,255,255,255}
+
+        if k == selected_weapon then
+            color_text = {50,176,255,255}
+        end
+
+        renderer.text(w/2 + size,h/2,color_text[1],color_text[2],color_text[3],255,nil,0,k)
+
+        if intersect(w/2 + size,h/2,100,12) and client.key_state(0x1) then 
+            selected_weapon = k
+            hovered = true
+        end
+
+        if k == selected_weapon then 
+
+           local size_x = selected_weapon == "main" and -110 or 10
+           local nigga_brain = 0
+           local current_tab = main_combo
+           if k == "main" then current_tab = main_combo elseif k == "pistols" then current_tab = pistol_combo end
+           
+            for i=1, #v.weapons do 
+
+                if i < #v.weapons then
+
+                    local get_image = images.get_weapon_icon(v.weapons[i])
+                    local size_value = k == "pistols" or k == "utilities"
+                    local size = size_value and 40 or 100
+
+                    local color = {160,160,160,255}
+
+                    if k == "utilities" then
+                        size = (v.weapons[i] == "item_assaultsuit" or v.weapons[i] == "weapon_taser") and 30 or 20
+
+                        if table_contains(ui.get(utilities_combo),v.weapons[i]) then 
+                            color = {255,255,255,255}
+                        end
+                    end
+
+                    local is_grenade = selected_weapon == "utilities" and true or false
+
+                    if i % 3 == 1 then 
+                        size_x = size_x + size*2
+                        nigga_brain = nigga_brain - 180
+                    end
+
+                    if intersect(w/2 + size_x+ (is_grenade and 40 or 0),h/2 + (i*60) + nigga_brain + 160,size ,30) and client.key_state(0x1) then
+                        v.weapons[#v.weapons] = v.weapons[i]
+                        hovered=true
+
+
+                        if k == "utilities" then 
+                            if not table_contains(utilities,v.weapons[i]) then
+                                table.insert(utilities,v.weapons[i]) 
+                            end
+                            ui.set(utilities_combo,utilities)
+                        else
+                            ui.set(current_tab,v.weapons[i])
+                        end
+                    end
+
+                    if intersect(w/2 + size_x+ (is_grenade and 40 or 0),h/2 + (i*60) + nigga_brain + 160,size ,30) and client.key_state(0x02) then
+                        v.weapons[#v.weapons] = "nil"
+                        hovered=true
+                       
+
+                        if k == "utilities" then 
+                            for index,_v in ipairs(utilities) do
+                                if _v == v.weapons[i] then
+                                    table.remove(utilities,index)
+                                    ui.set(utilities_combo,utilities)
+                                    break
+                                end
+                            end
+                        else
+                            ui.set(current_tab,"nil")
+                        end
+                    end
+
+                    if v.weapons[#v.weapons] ~= "nil" and k ~= "utilities" then
+
+
+                        if ui.get(current_tab) == v.weapons[i] then 
+                            color = {255,255,255,255}
+                        end
+                    end
+
+                    
+
+                    get_image:draw(w/2 + size_x + (is_grenade and 40 or 0), h/2 + (i*60) + nigga_brain + 160,size,30,color[1],color[2],color[3],255,true,nil)
+                end
+            end
+        end
+
+        if k == "main" then 
+            v.weapons[#v.weapons] = ui.get(main_combo)
+        elseif k == "pistols" then 
+            v.weapons[#v.weapons] = ui.get(pistol_combo)
+        else
+            utilities = ui.get(utilities_combo)
+        end
+    end
+
+end
+
+local main_round_start = function(ctx) 
+    local str = ""
+    client.delay_call(0.2, function() 
+        for k,v in pairs(weapons) do 
+
+            if v.weapons[#v.weapons] ~= "nil" and k ~= "utilities" then 
+                client.exec("buy " .. buy_weapons[v.weapons[#v.weapons]])
+                --print("done!")
+            elseif k == "utilities" then
+                for index,_v in ipairs(utilities) do 
+                    str = str .. "buy " .. buy_weapons[_v] .. "; "
+                end
+    
+                client.exec(str)
+                --print("done_2!")
+            end
+        end
+    end)
+end
+
+local main_setup = function(cmd) 
+
+    if hovered then
+        cmd.in_attack = 0
+    end
+end
+
+local main_paint_ui = function()
+    if ui.is_menu_open() then 
+        ui.set_visible(main_combo, false)
+        ui.set_visible(pistol_combo, false)
+        ui.set_visible(utilities_combo, false)
+    end
+end
+
+client.set_event_callback("setup_command", main_setup)
+client.set_event_callback("round_start", main_round_start)
+client.set_event_callback("paint", main_paint)
+client.set_event_callback("paint_ui", main_paint_ui)
