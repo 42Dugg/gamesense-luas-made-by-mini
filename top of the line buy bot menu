@@ -86,7 +86,7 @@ local main_paint = function()
         if k == selected_weapon then 
 
            local size_x = selected_weapon == "main" and -110 or 10
-           local nigga_brain = 0
+           local lol_brain = 0
            local current_tab = main_combo
            if k == "main" then current_tab = main_combo elseif k == "pistols" then current_tab = pistol_combo end
            
@@ -112,10 +112,10 @@ local main_paint = function()
 
                     if i % 3 == 1 then 
                         size_x = size_x + size*2
-                        nigga_brain = nigga_brain - 180
+                        lol_brain = lol_brain - 180
                     end
 
-                    if intersect(w/2 + size_x+ (is_grenade and 40 or 0),h/2 + (i*60) + nigga_brain + 160,size ,30) and client.key_state(0x1) then
+                    if intersect(w/2 + size_x+ (is_grenade and 40 or 0),h/2 + (i*60) + lol_brain + 160,size ,30) and client.key_state(0x1) then
                         v.weapons[#v.weapons] = v.weapons[i]
                         hovered=true
 
@@ -130,7 +130,7 @@ local main_paint = function()
                         end
                     end
 
-                    if intersect(w/2 + size_x+ (is_grenade and 40 or 0),h/2 + (i*60) + nigga_brain + 160,size ,30) and client.key_state(0x02) then
+                    if intersect(w/2 + size_x+ (is_grenade and 40 or 0),h/2 + (i*60) + lol_brain + 160,size ,30) and client.key_state(0x02) then
                         v.weapons[#v.weapons] = "nil"
                         hovered=true
                        
@@ -158,7 +158,7 @@ local main_paint = function()
 
                     
 
-                    get_image:draw(w/2 + size_x + (is_grenade and 40 or 0), h/2 + (i*60) + nigga_brain + 160,size,30,color[1],color[2],color[3],255,true,nil)
+                    get_image:draw(w/2 + size_x + (is_grenade and 40 or 0), h/2 + (i*60) + lol_brain + 160,size,30,color[1],color[2],color[3],255,true,nil)
                 end
             end
         end
